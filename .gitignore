@@ -1,0 +1,18 @@
+# Virtualenvs and generated files
+.venv/
+venv-win/
+venv/
+env/
+ENV/
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+# Editors
+.vscode/
+.idea/
+# Data
+transactions.csv
+python generator/*.csv
