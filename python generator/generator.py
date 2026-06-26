@@ -4,12 +4,14 @@ import csv
 
 # Optional: use Faker/pandas if available, otherwise fall back to stdlib
 try:
+    # pyrefly: ignore [missing-import]
     from faker import Faker
     fake = Faker()
 except Exception:
     fake = None
 
 try:
+    # pyrefly: ignore [missing-import]
     import pandas as pd
 except Exception:
     pd = None
@@ -28,7 +30,12 @@ def random_datetime(start, end):
 
 
 def generate_record():
-    amount = round(random.uniform(100, 500000), 2)
+    is_fraud = random.random() < 0.05  # 5% chance of fraud
+
+    if is_fraud:
+        amount = round(random.uniform(500000, 5000000), 2)  # Higher transfer amount
+    else:
+        amount = round(random.uniform(100, 500000), 2)
 
     # transaction datetime
     if fake:
@@ -46,8 +53,9 @@ def generate_record():
         "bank_account": str(random.randint(100000000000,999999999999)),
         "amount_transferred": amount,
         "transaction_datetime": tx_dt_iso,
-        "location": (f"{fake.city()}, {fake.country()}" if fake else "Colombo, Sri Lanka"),
-        "ip_address": (fake.ipv4() if fake else ".".join(str(random.randint(0,255)) for _ in range(4)))
+        "location": ("Unknown" if is_fraud else (f"{fake.city()}, {fake.country()}" if fake else "Colombo, Sri Lanka")),
+        "ip_address": (fake.ipv4() if fake else ".".join(str(random.randint(0,255)) for _ in range(4))),
+        "is_fraud": 1 if is_fraud else 0
     }
 
 
@@ -57,17 +65,15 @@ def main():
     if pd:
         df = pd.DataFrame(records)
         df.to_csv("transactions.csv", index=False)
-        print(df.head())
+        print("transactions.csv updated successfully with 1000 records.")
     else:
-        fieldnames = ["nic_id", "username", "mobile_number", "bank_account", "amount_transferred", "transaction_datetime", "location", "ip_address"]
+        fieldnames = ["nic_id", "username", "mobile_number", "bank_account", "amount_transferred", "transaction_datetime", "location", "ip_address", "is_fraud"]
         with open("transactions.csv", "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             for r in records:
                 writer.writerow(r)
-        # print first 5 records
-        for r in records[:5]:
-            print(r)
+        print("transactions.csv updated successfully with 1000 records.")
 
 
 if __name__ == "__main__":
